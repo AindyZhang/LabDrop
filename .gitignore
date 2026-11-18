@@ -1,0 +1,16 @@
+# 用户数据与运行态文件（严禁上传私人文件）
+uploads/
+config.json
+runtime.json
+daemon.log
+
+# 构建产物与嵌入式运行时
+build/
+dist/
+runtime-py/
+*.exe
+*.zip
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
