@@ -22,12 +22,21 @@
 * **Hot-Swappable Public Access Toggle**: Includes a pure-Python TCP tunnel client (`bore.pub`) with a sleek toggle switch in the controller — turn public internet access ON or OFF anytime without interrupting LAN transfers.
 * **Multi-User Concurrency & Simultaneous Up/Down**: Multi-threaded HTTP server (`ThreadingHTTPServer`), atomic temp-file writes to prevent partial reads or file-lock collisions, and hidden-iframe downloads so simultaneous uploads never abort (even on iPad/iPhone Safari).
 * **Zero-Dependency Self-Propagating Installer**: `LabDrop-Setup.exe` (~10.6 MB) bundles an embedded Python 3.12 runtime — no Python or admin privileges required on target machines. Visitors can download the installer and user guide directly from the web UI footer.
+* **Built-in Update Check**: Automatically checks GitHub Releases (read-only) for new versions and lets users download the latest `LabDrop-Setup.exe` in one click while keeping existing folders and settings intact.
+
+---
+
+## 🔒 Privacy & Local-First Guarantee
+
+* **100% Local Storage**: All files and folders stay strictly on your own hard drive — **nothing is ever uploaded to any cloud storage or third-party database**.
+* **Zero Telemetry / Zero Tracking**: LabDrop collects no analytics, no personal info, and no usage logs. The built-in update checker performs a single read-only `GET` request to the public GitHub Releases API to compare version numbers.
+* **Full Control Over Exposure**: Keep the **Public Access** switch OFF to confine access strictly to your local LAN/Wi-Fi.
 
 ---
 
 ## 🚀 Quick Start
 
-1. Download the latest **`LabDrop-Setup.exe`** from the **[Releases](../../releases)** page.
+1. Download the latest **`LabDrop-Setup.exe`** from the **[Releases](https://github.com/AindyZhang/LabDrop/releases)** page.
 2. Run the installer and click **Install** (takes ~3 seconds, creates a yellow lightning desktop shortcut).
 3. Launch **LabDrop** from your desktop, pick any folder to share, and click **Start**.
 4. Share the **LAN URL** (blazing fast over the same Wi-Fi/Ethernet) or toggle **Public Access** ON to share across the internet.

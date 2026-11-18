@@ -389,7 +389,7 @@ namespace LabDropSetup
                     if (key != null)
                     {
                         key.SetValue("DisplayName", "LabDrop 实验室网络U盘");
-                        key.SetValue("DisplayVersion", "2.7.0");
+                        key.SetValue("DisplayVersion", "2.8.0");
                         key.SetValue("Publisher", "LabDrop");
                         key.SetValue("DisplayIcon", icoPath);
                         key.SetValue("InstallLocation", targetDir);

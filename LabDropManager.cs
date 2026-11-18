@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -322,8 +323,14 @@ namespace LabDropManager
         private readonly string daemonScript;
         private readonly string defaultStorageDir;
         private const int PORT = 8000;
+        private const string APP_VERSION = "2.8.0";
+        private const string GITHUB_REPO_URL = "https://github.com/AindyZhang/LabDrop";
+        private const string GITHUB_LATEST_API = "https://api.github.com/repos/AindyZhang/LabDrop/releases/latest";
 
         private StatusPill statusPill;
+        private ModernButton btnCheckUpdate;
+        private string latestDownloadUrl = "";
+        private string latestVersionTag = "";
         private ModernButton btnMainAction;
         private Label lblDirPath;
         private ModernButton btnChangeDir;
@@ -366,6 +373,8 @@ namespace LabDropManager
             LoadConfig();
             InitializeUi();
             StartPolling();
+            // 启动后后台静默只读检查 GitHub 最新版本（不上传任何本地信息）
+            CheckForUpdatesAsync(true);
         }
 
         private void LoadConfig()
@@ -507,7 +516,7 @@ namespace LabDropManager
         private void InitializeUi()
         {
             this.Text = "LabDrop · 实验室网络U盘";
-            this.ClientSize = new Size(468, 526);
+            this.ClientSize = new Size(468, 554);
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
@@ -706,15 +715,168 @@ namespace LabDropManager
             btnOpenPub.Click += (s, e) => OpenUrl(currentPublicUrl);
             cardNet.Controls.Add(btnOpenPub);
 
-            // 5. 底部轻盈一句提示
+            // 5. 底部轻盈提示与版本更新栏
             var lblFooter = new Label();
-            lblFooter.Text = "关闭本窗口后服务仍在后台持续运行 · 随时重开即可管理";
+            lblFooter.Text = "关闭窗口后服务仍在后台运行 · 100% 本地存储，不上传任何隐私";
             lblFooter.Font = new Font("Microsoft YaHei UI", 8f);
             lblFooter.ForeColor = Color.FromArgb(148, 163, 184);
-            lblFooter.Location = new Point(24, 496);
-            lblFooter.Size = new Size(420, 20);
+            lblFooter.Location = new Point(24, 492);
+            lblFooter.Size = new Size(420, 18);
             lblFooter.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblFooter);
+
+            var lblVer = new Label();
+            lblVer.Text = "v" + APP_VERSION;
+            lblVer.Font = new Font("Consolas", 8.5f);
+            lblVer.ForeColor = Color.FromArgb(148, 163, 184);
+            lblVer.Location = new Point(24, 518);
+            lblVer.Size = new Size(64, 24);
+            lblVer.TextAlign = ContentAlignment.MiddleLeft;
+            this.Controls.Add(lblVer);
+
+            btnCheckUpdate = CreateGhostButton("检查更新", new Point(154, 516), new Size(160, 26), Color.FromArgb(100, 116, 139));
+            btnCheckUpdate.Font = new Font("Microsoft YaHei UI", 8.5f);
+            btnCheckUpdate.Click += BtnCheckUpdate_Click;
+            this.Controls.Add(btnCheckUpdate);
+
+            var btnGithub = CreateGhostButton("GitHub ↗", new Point(374, 516), new Size(70, 26), Color.FromArgb(100, 116, 139));
+            btnGithub.Font = new Font("Microsoft YaHei UI", 8.5f);
+            btnGithub.Click += (s, e) => OpenUrl(GITHUB_REPO_URL);
+            this.Controls.Add(btnGithub);
+        }
+
+        private static bool IsNewerVersion(string remoteTag, string localVer)
+        {
+            try
+            {
+                string rClean = (remoteTag ?? "").Trim().TrimStart('v', 'V');
+                string lClean = (localVer ?? "").Trim().TrimStart('v', 'V');
+                Version rv = new Version(rClean);
+                Version lv = new Version(lClean);
+                return rv > lv;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void BtnCheckUpdate_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(latestDownloadUrl))
+            {
+                var ans = MessageBox.Show(
+                    "发现新版本 " + latestVersionTag + "（当前 v" + APP_VERSION + "）！\n\n是否立即前往下载最新版安装包？\n（覆盖安装会保留你的配置与本地文件，不会丢失数据）",
+                    "发现新版本", MessageBoxButtons.YesNo, MessageBoxIcon.Information
+                );
+                if (ans == DialogResult.Yes)
+                    OpenUrl(latestDownloadUrl);
+                return;
+            }
+            CheckForUpdatesAsync(false);
+        }
+
+        private void CheckForUpdatesAsync(bool silent)
+        {
+            if (!silent)
+            {
+                btnCheckUpdate.Enabled = false;
+                btnCheckUpdate.Text = "正在检查更新...";
+                btnCheckUpdate.Invalidate();
+            }
+
+            ThreadPool.QueueUserWorkItem(_ => {
+                try
+                {
+                    // .NET 4.x 必须启用 TLS 1.2 才能访问 GitHub HTTPS API
+                    ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+                    var req = (HttpWebRequest)WebRequest.Create(GITHUB_LATEST_API);
+                    req.Method = "GET";
+                    req.UserAgent = "LabDrop-Desktop/" + APP_VERSION;
+                    req.Timeout = 6000;
+
+                    using (var resp = (HttpWebResponse)req.GetResponse())
+                    using (var reader = new StreamReader(resp.GetResponseStream(), Encoding.UTF8))
+                    {
+                        string body = reader.ReadToEnd();
+                        var dict = json.Deserialize<Dictionary<string, object>>(body);
+                        string tag = GetStr(dict, "tag_name");
+                        string htmlUrl = GetStr(dict, "html_url");
+                        string dlUrl = htmlUrl;
+
+                        // 优先直接定位最新 Release 附件里的 LabDrop-Setup.exe
+                        if (dict != null && dict.ContainsKey("assets") && dict["assets"] is System.Collections.ArrayList)
+                        {
+                            var assets = (System.Collections.ArrayList)dict["assets"];
+                            foreach (var item in assets)
+                            {
+                                var a = item as Dictionary<string, object>;
+                                if (a != null)
+                                {
+                                    string aname = GetStr(a, "name");
+                                    string burl = GetStr(a, "browser_download_url");
+                                    if (aname.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(burl))
+                                    {
+                                        dlUrl = burl;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        bool hasNew = IsNewerVersion(tag, APP_VERSION);
+                        if (this.IsDisposed) return;
+                        this.BeginInvoke((Action)(() => {
+                            btnCheckUpdate.Enabled = true;
+                            if (hasNew)
+                            {
+                                latestVersionTag = tag;
+                                latestDownloadUrl = string.IsNullOrEmpty(dlUrl) ? (GITHUB_REPO_URL + "/releases/latest") : dlUrl;
+                                btnCheckUpdate.Text = "✨ 新版本 " + tag + " 可用";
+                                btnCheckUpdate.TextColor = Color.FromArgb(37, 99, 235);
+                                btnCheckUpdate.Invalidate();
+                                if (!silent)
+                                    BtnCheckUpdate_Click(null, EventArgs.Empty);
+                            }
+                            else
+                            {
+                                btnCheckUpdate.Text = "检查更新";
+                                btnCheckUpdate.Invalidate();
+                                if (!silent)
+                                    MessageBox.Show("当前已是最新版本 (v" + APP_VERSION + ")！", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }));
+                    }
+                }
+                catch (WebException wex)
+                {
+                    if (this.IsDisposed) return;
+                    this.BeginInvoke((Action)(() => {
+                        btnCheckUpdate.Enabled = true;
+                        btnCheckUpdate.Text = "检查更新";
+                        btnCheckUpdate.Invalidate();
+                        if (!silent)
+                        {
+                            var httpResp = wex.Response as HttpWebResponse;
+                            if (httpResp != null && httpResp.StatusCode == HttpStatusCode.NotFound)
+                                MessageBox.Show("当前已是最新版本 (v" + APP_VERSION + ")。\n（GitHub 仓库暂未发布更新的 Release）", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            else
+                                MessageBox.Show("连接 GitHub 检查更新失败，请确认网络畅通后重试。", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }));
+                }
+                catch
+                {
+                    if (this.IsDisposed) return;
+                    this.BeginInvoke((Action)(() => {
+                        btnCheckUpdate.Enabled = true;
+                        btnCheckUpdate.Text = "检查更新";
+                        btnCheckUpdate.Invalidate();
+                        if (!silent)
+                            MessageBox.Show("检查更新失败，请稍后重试。", "检查更新", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }));
+                }
+            });
         }
 
         private ModernButton CreateGhostButton(string text, Point loc, Size size, Color textColor)

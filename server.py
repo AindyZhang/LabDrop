@@ -1165,9 +1165,10 @@ def get_html_page():
     <div class="promo-bar">
       <div class="promo-text">
         <span style="font-size:18px;">⚡</span>
-        <span><strong>觉得好用？</strong>直接下载安装，把你自己的电脑也变成专属网络U盘</span>
+        <span><strong>100% 本地存储 · 不上传任何隐私</strong> — 也想在自己电脑搭一个？</span>
       </div>
       <div class="promo-actions">
+        <a class="btn btn-secondary" href="https://github.com/AindyZhang/LabDrop" target="_blank">⭐ GitHub / 检查新版</a>
         <a class="btn btn-secondary" href="/guide" target="_blank">📖 使用说明书</a>
         <a class="btn btn-primary" href="/download-installer" target="dlFrame" download="LabDrop-Setup.exe">⬇ 下载管理软件 (Setup.exe)</a>
       </div>
