@@ -212,8 +212,10 @@ namespace LabDropSetup
             pic.Paint += (s, pe) => DrawYellowLightningLogo(pe.Graphics, 48);
             this.Controls.Add(pic);
 
-            this.Controls.Add(new Label { Text = "LabDrop 实验室网络U盘", Font = new Font("Microsoft YaHei UI", 14.5f, FontStyle.Bold), ForeColor = Color.FromArgb(17, 24, 39), Location = new Point(84, 22), AutoSize = true });
-            this.Controls.Add(new Label { Text = "免装 Python · 零依赖 · 一键部署至本机", Font = new Font("Microsoft YaHei UI", 8.5f), ForeColor = Color.FromArgb(107, 114, 128), Location = new Point(86, 51), AutoSize = true });
+            this.Controls.Add(new Label { Text = "LabDrop 实验室网络U盘", Font = new Font("Microsoft YaHei UI", 13.5f, FontStyle.Bold), ForeColor = Color.FromArgb(17, 24, 39), Location = new Point(84, 17), AutoSize = true });
+            var lblSubTitle = new Label { Text = "免装 Python · 零依赖 · 一键部署至本机", Font = new Font("Microsoft YaHei UI", 8.5f), ForeColor = Color.FromArgb(107, 114, 128), Location = new Point(86, 51), AutoSize = true };
+            this.Controls.Add(lblSubTitle);
+            lblSubTitle.BringToFront();
 
             var card = new RoundedBox { Location = new Point(24, 92), Size = new Size(420, 178) };
             this.Controls.Add(card);

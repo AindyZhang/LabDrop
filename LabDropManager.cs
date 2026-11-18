@@ -515,7 +515,7 @@ namespace LabDropManager
 
         private void InitializeUi()
         {
-            this.Text = "LabDrop · 实验室网络U盘";
+            this.Text = "LabDrop v" + APP_VERSION;
             this.ClientSize = new Size(468, 554);
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -525,19 +525,19 @@ namespace LabDropManager
 
             try { this.Icon = CreateVectorAppIcon(); } catch { }
 
-            // 1. 顶部极简标题栏 (纯 GDI+ 抗锯齿矢量绘制黄色闪电 Logo，绝无位图解码异常)
+            // 1. 顶部极简标题栏 (高 DPI 防重叠间距优化)
             var picIcon = new Panel();
-            picIcon.Location = new Point(24, 22);
-            picIcon.Size = new Size(40, 40);
+            picIcon.Location = new Point(24, 20);
+            picIcon.Size = new Size(44, 44);
             picIcon.BackColor = Color.Transparent;
-            picIcon.Paint += (s, pe) => DrawYellowLightningLogo(pe.Graphics, 40);
+            picIcon.Paint += (s, pe) => DrawYellowLightningLogo(pe.Graphics, 44);
             this.Controls.Add(picIcon);
 
             var lblBrand = new Label();
             lblBrand.Text = "LabDrop";
-            lblBrand.Font = new Font("Microsoft YaHei UI", 14.5f, FontStyle.Bold);
+            lblBrand.Font = new Font("Microsoft YaHei UI", 13.5f, FontStyle.Bold);
             lblBrand.ForeColor = Color.FromArgb(17, 24, 39);
-            lblBrand.Location = new Point(74, 20);
+            lblBrand.Location = new Point(78, 15);
             lblBrand.AutoSize = true;
             this.Controls.Add(lblBrand);
 
@@ -545,9 +545,10 @@ namespace LabDropManager
             lblSubBrand.Text = "实验室共享网络U盘";
             lblSubBrand.Font = new Font("Microsoft YaHei UI", 8.5f);
             lblSubBrand.ForeColor = Color.FromArgb(107, 114, 128);
-            lblSubBrand.Location = new Point(75, 45);
+            lblSubBrand.Location = new Point(79, 49);
             lblSubBrand.AutoSize = true;
             this.Controls.Add(lblSubBrand);
+            lblSubBrand.BringToFront();
 
             statusPill = new StatusPill();
             statusPill.Location = new Point(342, 28);
@@ -678,8 +679,8 @@ namespace LabDropManager
             lblPubState.Text = enablePublic ? "已开启" : "已禁止";
             lblPubState.Font = new Font("Microsoft YaHei UI", 8.5f);
             lblPubState.ForeColor = enablePublic ? Color.FromArgb(16, 185, 129) : Color.FromArgb(156, 163, 175);
-            lblPubState.Location = new Point(304, 124);
-            lblPubState.Size = new Size(48, 20);
+            lblPubState.Location = new Point(272, 123);
+            lblPubState.Size = new Size(80, 22);
             lblPubState.TextAlign = ContentAlignment.MiddleRight;
             cardNet.Controls.Add(lblPubState);
 
@@ -715,7 +716,7 @@ namespace LabDropManager
             btnOpenPub.Click += (s, e) => OpenUrl(currentPublicUrl);
             cardNet.Controls.Add(btnOpenPub);
 
-            // 5. 底部轻盈提示与版本更新栏
+            // 5. 底部轻盈提示与左右对称操作栏
             var lblFooter = new Label();
             lblFooter.Text = "关闭窗口后服务仍在后台运行 · 100% 本地存储，不上传任何隐私";
             lblFooter.Font = new Font("Microsoft YaHei UI", 8f);
@@ -725,21 +726,12 @@ namespace LabDropManager
             lblFooter.TextAlign = ContentAlignment.MiddleCenter;
             this.Controls.Add(lblFooter);
 
-            var lblVer = new Label();
-            lblVer.Text = "v" + APP_VERSION;
-            lblVer.Font = new Font("Consolas", 8.5f);
-            lblVer.ForeColor = Color.FromArgb(148, 163, 184);
-            lblVer.Location = new Point(24, 518);
-            lblVer.Size = new Size(64, 24);
-            lblVer.TextAlign = ContentAlignment.MiddleLeft;
-            this.Controls.Add(lblVer);
-
-            btnCheckUpdate = CreateGhostButton("检查更新", new Point(154, 516), new Size(160, 26), Color.FromArgb(100, 116, 139));
+            btnCheckUpdate = CreateGhostButton("检查更新", new Point(20, 516), new Size(76, 26), Color.FromArgb(100, 116, 139));
             btnCheckUpdate.Font = new Font("Microsoft YaHei UI", 8.5f);
             btnCheckUpdate.Click += BtnCheckUpdate_Click;
             this.Controls.Add(btnCheckUpdate);
 
-            var btnGithub = CreateGhostButton("GitHub ↗", new Point(374, 516), new Size(70, 26), Color.FromArgb(100, 116, 139));
+            var btnGithub = CreateGhostButton("GitHub ↗", new Point(374, 516), new Size(72, 26), Color.FromArgb(100, 116, 139));
             btnGithub.Font = new Font("Microsoft YaHei UI", 8.5f);
             btnGithub.Click += (s, e) => OpenUrl(GITHUB_REPO_URL);
             this.Controls.Add(btnGithub);
@@ -781,6 +773,7 @@ namespace LabDropManager
             if (!silent)
             {
                 btnCheckUpdate.Enabled = false;
+                btnCheckUpdate.Width = 112;
                 btnCheckUpdate.Text = "正在检查更新...";
                 btnCheckUpdate.Invalidate();
             }
@@ -832,6 +825,7 @@ namespace LabDropManager
                             {
                                 latestVersionTag = tag;
                                 latestDownloadUrl = string.IsNullOrEmpty(dlUrl) ? (GITHUB_REPO_URL + "/releases/latest") : dlUrl;
+                                btnCheckUpdate.Width = 170;
                                 btnCheckUpdate.Text = "✨ 新版本 " + tag + " 可用";
                                 btnCheckUpdate.TextColor = Color.FromArgb(37, 99, 235);
                                 btnCheckUpdate.Invalidate();
@@ -840,6 +834,7 @@ namespace LabDropManager
                             }
                             else
                             {
+                                btnCheckUpdate.Width = 76;
                                 btnCheckUpdate.Text = "检查更新";
                                 btnCheckUpdate.Invalidate();
                                 if (!silent)
@@ -853,6 +848,7 @@ namespace LabDropManager
                     if (this.IsDisposed) return;
                     this.BeginInvoke((Action)(() => {
                         btnCheckUpdate.Enabled = true;
+                        btnCheckUpdate.Width = 76;
                         btnCheckUpdate.Text = "检查更新";
                         btnCheckUpdate.Invalidate();
                         if (!silent)
@@ -870,6 +866,7 @@ namespace LabDropManager
                     if (this.IsDisposed) return;
                     this.BeginInvoke((Action)(() => {
                         btnCheckUpdate.Enabled = true;
+                        btnCheckUpdate.Width = 76;
                         btnCheckUpdate.Text = "检查更新";
                         btnCheckUpdate.Invalidate();
                         if (!silent)

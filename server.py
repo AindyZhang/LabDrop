@@ -872,6 +872,7 @@ def get_guide_html():
         </div>
       </div>
       <div class="top-actions">
+        <a class="btn btn-secondary" href="https://github.com/AindyZhang/LabDrop" target="_blank">⭐ GitHub</a>
         <a class="btn btn-primary" href="/download-installer" download="LabDrop-Setup.exe">⬇ 下载安装软件</a>
         <a class="btn btn-secondary" href="/">← 返回 U 盘</a>
       </div>
@@ -974,7 +975,15 @@ def get_html_page():
       background: var(--card-bg); padding: 20px 24px; border-radius: var(--radius);
       box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border);
     }
-    .brand h1 { font-size: 22px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+    .brand h1 { font-size: 22px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .gh-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #1e293b; color: #fff; font-size: 12px; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px; text-decoration: none;
+      transition: all 0.2s; line-height: 1.2;
+    }
+    .gh-badge:hover { background: #0f172a; transform: translateY(-1px); }
+    .gh-badge svg { width: 14px; height: 14px; fill: currentColor; }
     .brand p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
     .ip-box {
       display: flex; align-items: center; gap: 8px;
@@ -1093,8 +1102,14 @@ def get_html_page():
   <div class="container">
     <header>
       <div class="brand">
-        <h1>⚡ 实验室网络U盘 (LabDrop)</h1>
-        <p>支持多级目录、拖拽/多选上传文件及整个文件夹</p>
+        <h1>
+          <span>⚡ 实验室网络U盘 (LabDrop)</span>
+          <a class="gh-badge" href="https://github.com/AindyZhang/LabDrop" target="_blank" title="访问开源项目 GitHub 主页，欢迎点个 Star ⭐">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+            <span>GitHub</span>
+          </a>
+        </h1>
+        <p>支持多级目录、拖拽/多选上传文件及整个文件夹 · 100% 本地存储</p>
       </div>
       <div class="ip-box">
         <span>当前访问网址：</span>
